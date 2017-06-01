@@ -12,9 +12,12 @@
 
 import random
 
+N_INPUT = 972
+N_OUTPUT = 10 + 26 + 26
+
 class Datum:
     def __init__(self, label, img):
-        self.label = [0] * (10 + 26 + 26)
+        self.label = [0] * N_OUTPUT
         self.label[label - 1] = 1
         self.img = img
 
@@ -23,7 +26,7 @@ class IAM:
         print "Building dataset..."
         self.train = []
         self.test = []
-        for x in range(1, (10 + 26 + 26) + 1):
+        for x in range(1, N_OUTPUT + 1):
             print "Preparing sample %d..." % x
             for f in os.listdir(DATA_FOLDER % x):
                 img = scipy.ndimage.imread(IMG_TEMPLATE % (x, f), True)
@@ -46,6 +49,13 @@ class IAM:
                 res.append(self.train[i].img)
                 labels.append(self.train[i].label)
         return res, labels
+    def testSet(self):
+        res = []
+        labels = []
+        for i in range(0, len(self.test)):
+            res.append(self.test[i].img)
+            labels.append(self.test[i].label)
+        return res, labels
 
 ########################################################################################
 # Load IAM dataset
@@ -62,16 +72,16 @@ import tensorflow as tf
 LEARNING_CONST = 0.5
 
 # Create a tensorflow placeholder for an array [nx784] float32's (a.k.a. n MNIST vectors)
-inVect = tf.placeholder(tf.float32, [None, 972])
+inVect = tf.placeholder(tf.float32, [None, N_INPUT])
 # Initalize the ANN with zero's
 # Define tensorflow variable for the weight matrix [784x10] so we can matrix multiply
-weights = tf.Variable(tf.zeros([972, (10 + 26 + 26)]))
+weights = tf.Variable(tf.zeros([N_INPUT, N_OUTPUT]))
 # Define tensorflow variable for the bias vector
-biases = tf.Variable(tf.zeros([(10 + 26 + 26)]))
+biases = tf.Variable(tf.zeros([N_OUTPUT]))
 # Define formula for calculating output [nx10]
 outVect = tf.nn.softmax(tf.matmul(inVect, weights) + biases)
 # Create a tensorflow placeholder for the correct answer vector
-outVectCorr = tf.placeholder(tf.float32, [None, (10 + 26 + 26)])
+outVectCorr = tf.placeholder(tf.float32, [None, N_OUTPUT])
 
 # Calculate how incorrect the solutions arrive were
 crossEntropy = tf.reduce_mean(
@@ -110,4 +120,5 @@ for _ in range(1000) :
     sess.run(trainStep, feed_dict={inVect: batchIns, outVectCorr: batchOuts})
 
 # Check accuracy
-print(sess.run(accuracy, feed_dict={inVect: (o.img for o in iam.test), outVectCorr: (o.label for o in iam.test)}))
+testIn, testOuts = iam.testSet()
+print(sess.run(accuracy, feed_dict={inVect: testIn, outVectCorr: testOuts}))
