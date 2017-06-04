@@ -34,7 +34,7 @@ class IAM:
                 img = scipy.ndimage.imread(IMG_TEMPLATE % (x, f), True)
                 img = scipy.misc.imresize(img, 0.03)
                 img = list(itertools.chain.from_iterable(img))
-                print len(img)
+                img = [float(i)/max(img) for i in img]
                 if len(self.test) < (5 * x):
                     self.test.append(Datum(x, img))
                 else:
