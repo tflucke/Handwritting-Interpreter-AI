@@ -58,8 +58,8 @@ class IAM:
 print(sys.argv)
 
 LEARNING_CONST = 0.05
-TRAIN_CYCLES = 1000
-BATCH_SIZE = 100
+TRAIN_CYCLES = 2501
+BATCH_SIZE = 250
 
 # Turn off GPU Warnings/All other warnings
 import os
@@ -158,7 +158,7 @@ def main(_):
 
   with tf.Session() as sess:
     sess.run(tf.global_variables_initializer())
-    for i in range(101): # 20000
+    for i in range(TRAIN_CYCLES): # 20000
       batch = iam.nextBatch(BATCH_SIZE) # mnist.train.next_batch(50)
       if i % 100 == 0:
         train_accuracy = accuracy.eval(feed_dict={
